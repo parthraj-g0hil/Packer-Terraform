@@ -9,18 +9,8 @@ packer {
 }
 ################################################################
 
-
-
-
-
-
-
-
-
-
-################################################################
 source "amazon-ebs" "ubuntu" {
-  ami_name      = "learn-packer-linux-aws"
+  ami_name      = "packer-ubuntu-harden"
   instance_type = "t2.micro"
   region        = "ap-south-1"
 
@@ -35,10 +25,6 @@ source "amazon-ebs" "ubuntu" {
   }
 
   ssh_username = "ubuntu"
-
-  ami_tags = {
-    Name = "packer-nginx-hardened"
-  }
 
   launch_block_device_mappings {
     device_name           = "/dev/sda1"
@@ -98,31 +84,26 @@ source "amazon-ebs" "ubuntu" {
 }
 ################################################################################################
 
-
-
-
-
-
-
-
-
-################################################################################################
 build {
-  name    = "learn-packer"
+  name    = "ubuntu"
   sources = ["source.amazon-ebs.ubuntu"]
 
-  # Upload all scripts from local dir -> /tmp/Hardening-scripts in instance
-  provisioner "file" {
-    source      = "/home/dell/DEVOPS/Server-hardening/Hardening-scripts"
-    destination = "/tmp/Hardening-scripts"
-  }
-
-  # Run all scripts in sequence
   provisioner "shell" {
-    inline = [
-      "chmod +x /tmp/Hardening-scripts/*.sh",
-      "for script in /tmp/Hardening-scripts/*.sh; do echo Running $script; sudo bash $script; done"
+    # Upload + chmod + run with sudo bash
+    execute_command = "echo 'ubuntu' | sudo -S bash -c 'chmod +x {{ .Path }} && {{ .Path }}'"
+    scripts = [
+      "scripts/password-policy.sh",
+      "scripts/disable-usb.sh",
+#      "scripts/firewall.sh",
+#      "scripts/grub.sh",
+      "scripts/package-lock.sh",
+      "scripts/packages-lib.sh",
+      "scripts/ulimit.sh",
+      "scripts/unwanted-users.sh",
+      "scripts/version-hardening.sh",
+      "scripts/filesystem.sh",
     ]
   }
 }
+
 ################################################################################################

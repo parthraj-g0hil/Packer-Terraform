@@ -1,6 +1,7 @@
 #!/bin/bash
+set -euo pipefail
 
-echo "🛡️ Interactive UFW Firewall Configuration"
+echo "🛡️ Automated UFW Firewall Configuration"
 
 # Show currently listening ports and services
 echo ""
@@ -20,85 +21,57 @@ if sudo ufw status | grep -q inactive; then
   sudo ufw --force enable
 fi
 
-# Function to show service choices
-show_services() {
-  echo "Select a service or enter a custom port:"
-  echo "1) ssh (22)"
-  echo "2) ftp (21)"
-  echo "3) http (80)"
-  echo "4) https (443)"
-  echo "5) custom port"
-}
+############################################
+# Predefined Rules
+############################################
+# Format: "<action>:<port>:<ip or any>"
+# action = allow/deny
+# port   = number
+# ip     = specific IP or "any"
 
-while true; do
-  echo ""
-  read -rp "Do you want to add or remove a rule? (add/remove/exit): " task
-  case "$task" in
-    add)
-      show_services
-      read -rp "Enter choice (1-5): " service_choice
-      case $service_choice in
-        1) port=22; service="ssh" ;;
-        2) port=21; service="ftp" ;;
-        3) port=80; service="http" ;;
-        4) port=443; service="https" ;;
-        5)
-          read -rp "Enter custom port number (1-65535): " port
-          if ! [[ "$port" =~ ^[0-9]+$ ]] || ((port < 1 || port > 65535)); then
-            echo "❌ Invalid port number."
-            continue
-          fi
-          service="custom"
-          ;;
-        *)
-          echo "❌ Invalid choice."
-          continue
-          ;;
-      esac
+RULES=(
+  "allow:22:any"   # Allow SSH from anywhere
+  "allow:80:any"   # Allow HTTP
+  "allow:443:any"  # Allow HTTPS
+  "deny:21:any"    # Deny FTP
+  "allow:8080:any" # Allow 8080 from anywhere
+)
 
-      read -rp "Allow or deny? (a/d): " action_choice
-      case $action_choice in
-        a) action="allow" ;;
-        d) action="deny" ;;
-        *) echo "❌ Invalid choice."; continue ;;
-      esac
+############################################
+# Apply Rules
+############################################
+for rule in "${RULES[@]}"; do
+  IFS=":" read -r action port ip <<< "$rule"
+  
+  if [[ "$ip" == "any" ]]; then
+    cmd="sudo ufw $action $port/tcp"
+  else
+    cmd="sudo ufw $action from $ip to any port $port proto tcp"
+  fi
 
-      read -rp "Enter IP or subnet (e.g. 192.168.1.100 or any): " ip
-      if [[ "$ip" == "any" ]]; then
-        cmd="sudo ufw $action $port/tcp"
-      else
-        cmd="sudo ufw $action from $ip to any port $port proto tcp"
-      fi
-
-      echo "🚀 Executing: $cmd"
-      $cmd
-      ;;
-    
-    remove)
-      echo ""
-      echo "📋 Current UFW Rules (numbered):"
-      sudo ufw status numbered
-      echo ""
-      read -rp "Enter the rule number to delete: " delnum
-      if [[ "$delnum" =~ ^[0-9]+$ ]]; then
-        echo "🗑️ Deleting rule #$delnum..."
-        sudo ufw delete "$delnum"
-      else
-        echo "❌ Invalid rule number."
-      fi
-      ;;
-    
-    exit)
-      echo "✅ Exiting interactive firewall setup."
-      break
-      ;;
-    
-    *)
-      echo "❌ Invalid option. Please enter add, remove, or exit."
-      ;;
-  esac
-
-  echo ""
-  echo "📊 Current UFW Status:"
-  sudo ufw status verbose
+  echo "🚀 Applying rule: $cmd"
+  $cmd
 done
+
+############################################
+# Remove Specific Rules (Optional)
+############################################
+# Example: Delete rules by number (after checking status)
+REMOVE_RULES=( )
+
+if [[ ${#REMOVE_RULES[@]} -gt 0 ]]; then
+  echo "📋 Current UFW Rules (numbered):"
+  sudo ufw status numbered
+
+  for delnum in "${REMOVE_RULES[@]}"; do
+    echo "🗑️ Deleting rule #$delnum..."
+    yes | sudo ufw delete "$delnum"
+  done
+fi
+
+############################################
+# Final Status
+############################################
+echo ""
+echo "📊 Final UFW Status:"
+sudo ufw status verbose

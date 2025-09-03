@@ -10,7 +10,7 @@ packer {
 ################################################################
 
 source "amazon-ebs" "ubuntu" {
-  ami_name      = "packer-ubuntu-harden-1"
+  ami_name      = "packer-ubuntu-harden-2"
   instance_type = "t2.micro"
   region        = "ap-south-1"
 
@@ -94,13 +94,14 @@ build {
     scripts = [
       "scripts/password-policy.sh",
       "scripts/disable-usb.sh",
-#      "scripts/firewall.sh",
-#      "scripts/grub.sh",
+      "scripts/firewall.sh",
+      "scripts/grub.sh",
       "scripts/package-lock.sh",
       "scripts/packages-lib.sh",
       "scripts/ulimit.sh",
       "scripts/unwanted-users.sh",
       "scripts/version-hardening.sh",
+#      "Hardening-Ubuntu-2024.sh",
       "scripts/filesystem.sh",
     ]
   }

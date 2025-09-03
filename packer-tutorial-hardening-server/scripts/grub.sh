@@ -1,56 +1,53 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
-echo "🔐 Secure GRUB with password for edit access only (no boot-time lock)"
+echo "🔐 Securing GRUB with password (edit access only, no boot-time lock)"
 
-# Set GRUB username and password
-grub_user="admin"
-grub_password="parthraj@123"
+# Predefined GRUB credentials
+GRUB_USER="admin"
+GRUB_PASSWORD="EMI-linux09"
 
-# Generate GRUB password hash using echo and piping
-grub_hash=$(echo -e "${grub_password}\n${grub_password}" | grub-mkpasswd-pbkdf2 | grep "PBKDF2 hash" | awk '{print $NF}')
-echo "✅ GRUB password hash generated."
+# Generate PBKDF2 hash (non-interactive)
+GRUB_HASH=$(echo -e "${GRUB_PASSWORD}\n${GRUB_PASSWORD}" | grub-mkpasswd-pbkdf2 | grep "PBKDF2 hash" | awk '{print $NF}')
+echo "✅ Generated GRUB password hash."
 
-# Backup 40_custom before modifying
+# Files
 CUSTOM_FILE="/etc/grub.d/40_custom"
-BACKUP_FILE="${CUSTOM_FILE}.bak.$(date +%F-%T)"
-cp "$CUSTOM_FILE" "$BACKUP_FILE"
-echo "🧾 Backup of 40_custom created at: $BACKUP_FILE"
+CUSTOM_BACKUP="${CUSTOM_FILE}.bak.$(date +%F-%T)"
+DEFAULTS_FILE="/etc/default/grub"
+DEFAULTS_BACKUP="${DEFAULTS_FILE}.bak.$(date +%F-%T)"
 
-# Append GRUB superuser and password hash if not already present
-if ! grep -q "password_pbkdf2 $grub_user" "$CUSTOM_FILE"; then
+# Backup before changes
+cp "$CUSTOM_FILE" "$CUSTOM_BACKUP"
+echo "🧾 Backup of 40_custom saved: $CUSTOM_BACKUP"
+cp "$DEFAULTS_FILE" "$DEFAULTS_BACKUP"
+echo "🧾 Backup of grub defaults saved: $DEFAULTS_BACKUP"
+
+# Add GRUB superuser if not already present
+if ! grep -q "password_pbkdf2 $GRUB_USER" "$CUSTOM_FILE"; then
     cat <<EOF >> "$CUSTOM_FILE"
 
 # GRUB password protection
-set superuser="$grub_user"
-password_pbkdf2 $grub_user $grub_hash
+set superuser="$GRUB_USER"
+password_pbkdf2 $GRUB_USER $GRUB_HASH
 EOF
     echo "✅ Added GRUB superuser configuration."
 else
-    echo "⚠️ GRUB superuser config already exists. Please verify $CUSTOM_FILE."
+    echo "⚠️ GRUB superuser config already exists in $CUSTOM_FILE"
 fi
 
-# Backup /etc/default/grub before modifying
-DEFAULTS_FILE="/etc/default/grub"
-BACKUP_DEFAULTS="${DEFAULTS_FILE}.bak.$(date +%F-%T)"
-cp "$DEFAULTS_FILE" "$BACKUP_DEFAULTS"
-echo "🧾 Backup of grub defaults created at: $BACKUP_DEFAULTS"
+# Ensure required GRUB options in defaults
+grep -q "^GRUB_TIMEOUT_STYLE=" "$DEFAULTS_FILE" \
+  && sed -i "s/^GRUB_TIMEOUT_STYLE=.*/GRUB_TIMEOUT_STYLE=menu/" "$DEFAULTS_FILE" \
+  || echo "GRUB_TIMEOUT_STYLE=menu" >> "$DEFAULTS_FILE"
 
-# Update or add required GRUB options safely
-if grep -q "^GRUB_TIMEOUT_STYLE=" "$DEFAULTS_FILE"; then
-    sed -i "s/^GRUB_TIMEOUT_STYLE=.*/GRUB_TIMEOUT_STYLE=menu/" "$DEFAULTS_FILE"
-else
-    echo "GRUB_TIMEOUT_STYLE=menu" >> "$DEFAULTS_FILE"
-fi
+grep -q "^GRUB_ENABLE_CRYPTODISK=" "$DEFAULTS_FILE" \
+  && sed -i "s/^GRUB_ENABLE_CRYPTODISK=.*/GRUB_ENABLE_CRYPTODISK=y/" "$DEFAULTS_FILE" \
+  || echo "GRUB_ENABLE_CRYPTODISK=y" >> "$DEFAULTS_FILE"
 
-if grep -q "^GRUB_ENABLE_CRYPTODISK=" "$DEFAULTS_FILE"; then
-    sed -i "s/^GRUB_ENABLE_CRYPTODISK=.*/GRUB_ENABLE_CRYPTODISK=y/" "$DEFAULTS_FILE"
-else
-    echo "GRUB_ENABLE_CRYPTODISK=y" >> "$DEFAULTS_FILE"
-fi
-
+# Apply changes
 echo "🔁 Updating GRUB configuration..."
 update-grub
 
-echo "✅ GRUB password protection enabled for user '$grub_user'."
-echo "🚀 Normal boots won't ask for a password, but editing boot entries or accessing GRUB CLI will."
+echo "✅ GRUB password protection enabled for user '$GRUB_USER'."
+echo "🚀 Normal boots won't ask for a password, but editing boot entries or GRUB CLI will."

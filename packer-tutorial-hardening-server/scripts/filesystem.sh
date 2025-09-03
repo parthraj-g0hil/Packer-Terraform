@@ -78,7 +78,8 @@ done
 # Set up each selected mount point
 for dir in "${!DEVICE_MAP[@]}"; do
   device="${DEVICE_MAP[$dir]}"
-  label_name=$(basename "$dir" | tr -d '/')
+  # ✅ Unique label (slashes → underscores, strip leading _)
+  label_name=$(echo "$dir" | sed 's|/|_|g; s|^_||')
   temp_mount="/mnt/$label_name"
   mount_opts="${MOUNT_OPTIONS[$dir]:-defaults}"
 

@@ -10,7 +10,7 @@ packer {
 ################################################################
 
 source "amazon-ebs" "ubuntu" {
-  ami_name      = "packer-ubuntu-harden"
+  ami_name      = "packer-ubuntu-harden-1"
   instance_type = "t2.micro"
   region        = "ap-south-1"
 

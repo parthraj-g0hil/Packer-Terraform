@@ -111,7 +111,7 @@ build {
     execute_command = "echo 'ubuntu' | sudo -S bash '{{ .Path }}'"
     scripts = [
       "scripts/packages-lib.sh",         
-      "scripts/filesystem2.sh",           
+      "scripts/filesystem.sh",           
       "scripts/password-policy.sh",
       "scripts/disable-usb.sh",
       "scripts/firewall.sh",

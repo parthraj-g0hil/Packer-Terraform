@@ -249,7 +249,7 @@ run_command 'grep "^+:" /etc/passwd | tee /var/log/legacy_passwd_entries.log' "5
 run_command 'awk -F: '\''($3 == 0) { print $1 }'\'' /etc/passwd | grep -v "^root$" | tee /var/log/uid0_accounts.log' "5.5.3 Audit duplicate UID 0 accounts"
 run_command 'awk -F: '\''($3 == 0) { print $1 ":" $3 }'\'' /etc/group | tee /var/log/gid0_accounts.log' "5.5.4 Audit GID 0 accounts"
 run_command 'awk -F: '\''($3 == 0) { print $1 }'\'' /etc/passwd | grep -v "^root$" | tee /var/log/uid0_accounts.log' "5.5.5 Audit duplicate UID 0 accounts"
-run_command 'awk -F: '\''($2 == "" ) { print $1 }'\'' /etc/shadow | xargs -n 1 passwd -l' "5.5.6 Lock empty password accounts"
+run_command "awk -F: '(\$2 == \"\") { print \$1 }' /etc/shadow | xargs -r -n 1 passwd -l || true" "5.5.6 Lock empty password accounts"
 
 
 

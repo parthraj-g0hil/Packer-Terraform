@@ -31,10 +31,7 @@ fi
 
 RULES=(
   "allow:22:any"   # Allow SSH from anywhere
-  "allow:80:any"   # Allow HTTP
-  "allow:443:any"  # Allow HTTPS
   "deny:21:any"    # Deny FTP
-  "allow:8080:any" # Allow 8080 from anywhere
 )
 
 ############################################

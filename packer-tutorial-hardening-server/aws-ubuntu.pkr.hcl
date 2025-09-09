@@ -10,8 +10,8 @@ packer {
 ################################################################
 
 source "amazon-ebs" "ubuntu" {
-  ami_name      = "packer-ubuntu-harden-4"
-  instance_type = "t2.micro"
+  ami_name      = "packer-ubuntu-harden-7"
+  instance_type = "t2.xlarge"
   region        = "ap-south-1"
 
   source_ami_filter {
@@ -106,15 +106,16 @@ build {
   sources = ["source.amazon-ebs.ubuntu"]
 
   provisioner "shell" {
-    # Upload + chmod + run with sudo bash
-#    execute_command = "echo 'ubuntu' | sudo -S bash -c 'chmod +x {{ .Path }} && {{ .Path }}'"
+    # Upload + run scripts with sudo bash
     execute_command = "echo 'ubuntu' | sudo -S bash '{{ .Path }}'"
+
     scripts = [
+      # General scripts
       "scripts/packages-lib.sh",         
       "scripts/filesystem.sh",           
       "scripts/password-policy.sh",
       "scripts/disable-usb.sh",
-      "scripts/firewall.sh",
+#      "scripts/firewall.sh",
       "scripts/grub.sh",
       "scripts/package-lock.sh",
       "scripts/CIS-fix.sh",
@@ -123,8 +124,46 @@ build {
       "scripts/ulimit.sh",
       "scripts/unwanted-users.sh",
       "scripts/version-hardening.sh",
+
+      # CIS LEVEL 1 scripts
+      "CIS-LEVEL-1/update.sh",
+      "CIS-LEVEL-1/1.1.1.9.sh",
+      "CIS-LEVEL-1/1.3.1.2.sh",
+      "CIS-LEVEL-1/1.4.1.sh",
+      "CIS-LEVEL-1/2.3.2.2.sh",
+      "CIS-LEVEL-1/2.4.1.8.sh",
+      "CIS-LEVEL-1/3.3.2.sh",
+      "CIS-LEVEL-1/3.3.6.sh",
+      "CIS-LEVEL-1/3.3.7.sh",
+      "CIS-LEVEL-1/3.3.8.sh",
+      "CIS-LEVEL-1/3.3.9.sh",
+#      "CIS-LEVEL-1/4.2.3.sh",
+#      "CIS-LEVEL-1/4.2.4.sh",
+#      "CIS-LEVEL-1/4.2.6-7.sh",
+#      "CIS-LEVEL-1/4.3.4.sh",
+#      "CIS-LEVEL-1/4.3.5.sh",
+#      "CIS-LEVEL-1/4.3.8.sh",
+#      "CIS-LEVEL-1/4.3.10.sh",
+#      "CIS-LEVEL-1/4.4.1.1.sh",
+#      "CIS-LEVEL-1/4.4.2.2.sh",
+      "CIS-LEVEL-1/5.3.2.2.sh",
+      "CIS-LEVEL-1/5.3.2.4.sh",
+#      "CIS-LEVEL-1/5.3.3.1.1.sh",
+      "CIS-LEVEL-1/5.3.3.1.2.sh",
+      "CIS-LEVEL-1/5.3.3.2.1.sh",
+      "CIS-LEVEL-1/5.3.3.2.2.sh",
+      "CIS-LEVEL-1/5.3.3.2.4.sh",
+      "CIS-LEVEL-1/5.3.3.2.5.sh",
+      "CIS-LEVEL-1/5.3.3.2.8.sh",
+      "CIS-LEVEL-1/5.3.3.3.1-2.sh",
+      "CIS-LEVEL-1/5.3.3.3.sh",
+      "CIS-LEVEL-1/5.3.3.4.1.sh",
+      "CIS-LEVEL-1/5.4.3.2.sh",
+      "CIS-LEVEL-1/6.1.4.1.sh",
+      "CIS-LEVEL-1/7.1.12.sh"
     ]
   }
 }
+
 
 ################################################################################################

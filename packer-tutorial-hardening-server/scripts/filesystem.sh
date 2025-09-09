@@ -23,8 +23,8 @@ declare -A MOUNT_OPTIONS=(
   ["/var"]="nodev,nosuid"
   ["/tmp"]="nodev,nosuid,noexec"
   ["/var/tmp"]="nodev,nosuid,noexec"
-  ["/var/log"]="nodev,nosuid"
-  ["/var/log/audit"]="nodev,nosuid"
+  ["/var/log"]="defaults,rw,nosuid,nodev,noexec,relatime"
+  ["/var/log/audit"]="nodev,noexec,nosuid"
   ["/usr"]="nodev"
 )
 

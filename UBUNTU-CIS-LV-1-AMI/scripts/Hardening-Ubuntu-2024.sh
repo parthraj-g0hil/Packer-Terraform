@@ -175,6 +175,8 @@ run_command "ufw allow in from 192.168.10.2/24" "4.1.5 Allow internal network"
 run_command "ufw default deny incoming" "4.1.6 Default deny incoming"
 run_command "ufw default allow outgoing" "4.1.7 Default allow outgoing"
 run_command "ufw deny in from ::1" "4.1.8 Block IPv6 loopback"
+run_command "ufw allow 22/tcp" "4.1.9 Allow SSH from anywhere"
+
 
 # ===============[ SECTION 5: Configure SSH Server ]===============
 

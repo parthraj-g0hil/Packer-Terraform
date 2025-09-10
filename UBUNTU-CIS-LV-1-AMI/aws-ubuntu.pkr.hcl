@@ -10,7 +10,7 @@ packer {
 ################################################################
 
 source "amazon-ebs" "ubuntu" {
-  ami_name      = "packer-ubuntu-harden-7"
+  ami_name      = "packer-ubuntu-harden-8"
   instance_type = "t2.xlarge"
   region        = "ap-south-1"
 
@@ -115,12 +115,10 @@ build {
       "scripts/filesystem.sh",           
       "scripts/password-policy.sh",
       "scripts/disable-usb.sh",
-#      "scripts/firewall.sh",
       "scripts/grub.sh",
       "scripts/package-lock.sh",
       "scripts/CIS-fix.sh",
       "scripts/Hardening-Ubuntu-2024.sh",
-      "scripts/time-sync.sh",
       "scripts/ulimit.sh",
       "scripts/unwanted-users.sh",
       "scripts/version-hardening.sh",
@@ -130,7 +128,7 @@ build {
       "CIS-LEVEL-1/1.1.1.9.sh",
       "CIS-LEVEL-1/1.3.1.2.sh",
       "CIS-LEVEL-1/1.4.1.sh",
-      "CIS-LEVEL-1/2.3.2.2.sh",
+      "CIS-LEVEL-1/2.3.2.1-2.sh",
       "CIS-LEVEL-1/2.4.1.8.sh",
       "CIS-LEVEL-1/3.3.2.sh",
       "CIS-LEVEL-1/3.3.6.sh",
@@ -139,7 +137,7 @@ build {
       "CIS-LEVEL-1/3.3.9.sh",
 #      "CIS-LEVEL-1/4.2.3.sh",
 #      "CIS-LEVEL-1/4.2.4.sh",
-#      "CIS-LEVEL-1/4.2.6-7.sh",
+      "CIS-LEVEL-1/4.2.1-6-7.sh",
 #      "CIS-LEVEL-1/4.3.4.sh",
 #      "CIS-LEVEL-1/4.3.5.sh",
 #      "CIS-LEVEL-1/4.3.8.sh",
@@ -148,7 +146,7 @@ build {
 #      "CIS-LEVEL-1/4.4.2.2.sh",
       "CIS-LEVEL-1/5.3.2.2.sh",
       "CIS-LEVEL-1/5.3.2.4.sh",
-#      "CIS-LEVEL-1/5.3.3.1.1.sh",
+      "CIS-LEVEL-1/5.3.3.1.1.sh",
       "CIS-LEVEL-1/5.3.3.1.2.sh",
       "CIS-LEVEL-1/5.3.3.2.1.sh",
       "CIS-LEVEL-1/5.3.3.2.2.sh",

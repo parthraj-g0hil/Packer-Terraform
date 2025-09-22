@@ -1,30 +1,48 @@
 #!/bin/bash
-# 1.4.1 Ensure bootloader password is set (verify + update)
 
-set -euo pipefail
+# Script to remediate CIS 1.4.1: Ensure bootloader password is set
+# Sets GRUB superuser 'user-admin' with password 'Emc@123' and updates GRUB configuration
+# Non-interactive for Packer builds
 
-GRUB_CFG="/boot/grub/grub.cfg"
+set -e  # Exit on any error
 
-echo "========================================"
-echo "CIS Check: 1.4.1 Bootloader password verification"
-echo "========================================"
+# Set non-interactive frontend for debconf to prevent prompts
+export DEBIAN_FRONTEND=noninteractive
 
-# Step 1: Verify password_pbkdf2 exists in /etc/grub.d/40_custom
-if grep -qi "password_pbkdf2" /etc/grub.d/40_custom; then
-    echo "[*] Bootloader password found in /etc/grub.d/40_custom"
-else
-    echo "❌ Warning: No bootloader password found in /etc/grub.d/40_custom"
+# Install grub2-common if not already installed (required for grub-mkpasswd-pbkdf2)
+if ! dpkg -l | grep -q '^ii\s*grub2-common'; then
+    echo "Installing grub2-common..."
+    apt-get update -y
+    apt-get install -y --no-install-recommends grub2-common
 fi
 
-# Step 2: Update grub configuration
-echo "[*] Updating GRUB configuration..."
-sudo update-grub >/dev/null 2>&1
+# Define GRUB superuser and password
+GRUB_USER="admin"
+GRUB_PASSWORD="Emc@123"
 
-# Step 3: Verify password_pbkdf2 is in the generated grub.cfg
-if grep -qi "password_pbkdf2" "$GRUB_CFG"; then
-    echo "✅ Bootloader password is active in grub.cfg"
-else
-    echo "❌ Bootloader password not applied in grub.cfg"
-fi
+# Generate PBKDF2 password hash non-interactively
+echo "Generating GRUB password hash for user '$GRUB_USER'..."
+GRUB_PWD_HASH=$(echo -e "$GRUB_PASSWORD\n$GRUB_PASSWORD" | grub-mkpasswd-pbkdf2 --iteration-count=600000 --salt=64 | grep "PBKDF2 hash" | awk '{print $NF}')
 
-echo "========================================"
+# Create custom GRUB configuration file
+CUSTOM_GRUB_FILE="/etc/grub.d/40_custom"
+echo "Creating custom GRUB configuration at $CUSTOM_GRUB_FILE..."
+cat << EOF > $CUSTOM_GRUB_FILE
+#!/bin/sh
+exec tail -n +2 \$0
+set superusers="$GRUB_USER"
+password_pbkdf2 $GRUB_USER $GRUB_PWD_HASH
+EOF
+
+# Set permissions on the custom GRUB file
+chmod 600 $CUSTOM_GRUB_FILE
+
+# Optionally allow unrestricted booting (uncomment the following block if you want to boot without password prompt)
+# echo "Modifying /etc/grub.d/10_linux to allow unrestricted booting..."
+# sed -i 's/CLASS="--class gnu-linux --class gnu --class os"/CLASS="--class gnu-linux --class gnu --class os --unrestricted"/' /etc/grub.d/10_linux
+
+# Update GRUB configuration
+echo "Updating GRUB configuration..."
+update-grub
+
+echo "Remediation complete: GRUB bootloader password is set for user '$GRUB_USER'."

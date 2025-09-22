@@ -1,50 +1,48 @@
 #!/bin/bash
-set -euo pipefail
 
-SERVICE="systemd-timesyncd"
+# Script to remediate CIS 2.3.2.2: Ensure systemd-timesyncd is enabled and running
+# Addresses issue where systemd-timesyncd is inactive on server startup
+# Assumes Debian/Ubuntu-based system (uses apt-get); modify for other distros if needed
 
-# Step 1: Stop and mask chrony if installed
-if systemctl list-unit-files | grep -q '^chrony\.service'; then
-    systemctl stop chrony >/dev/null 2>&1 || true
-    systemctl mask chrony >/dev/null 2>&1 || true
+set -e  # Exit on any error
+
+# Update package list
+#apt-get update -y
+
+# Install systemd-timesyncd if not already installed
+if ! dpkg -l | grep -q '^ii\s*systemd-timesyncd'; then
+    echo "Installing systemd-timesyncd..."
+    apt-get install -y systemd-timesyncd
 fi
 
-# Step 2: Install systemd-timesyncd if missing
-if ! systemctl list-unit-files | grep -qw "$SERVICE.service"; then
-    apt-get install -y systemd-timesyncd >/dev/null 2>&1
+# Remove conflicting time sync services like chrony to prevent conflicts
+if dpkg -l | grep -q '^ii\s*chrony'; then
+    echo "Removing conflicting chrony service..."
+    apt-get remove -y --purge chrony
 fi
 
-# Step 3: Ensure systemd-timesyncd starts after network-online.target
-mkdir -p /etc/systemd/system/"$SERVICE".service.d
-cat <<EOF >/etc/systemd/system/"$SERVICE".service.d/override.conf
-[Unit]
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-Restart=always
-RestartSec=10
+# Configure timesyncd.conf with AWS-recommended NTP servers
+echo "Configuring /etc/systemd/timesyncd.conf with AWS NTP servers..."
+cat << EOF > /etc/systemd/timesyncd.conf
+[Time]
+NTP=169.254.169.123
+FallbackNTP=0.amazon.pool.ntp.org 1.amazon.pool.ntp.org 2.amazon.pool.ntp.org 3.amazon.pool.ntp.org
 EOF
 
-# Reload systemd to pick up override
-systemctl daemon-reexec
+# Unmask the systemd-timesyncd service
+echo "Unmasking systemd-timesyncd.service..."
+systemctl unmask systemd-timesyncd.service
 
-# Step 4: Unmask, enable, and start systemd-timesyncd
-systemctl unmask "$SERVICE.service" >/dev/null 2>&1 || true
-systemctl enable "$SERVICE.service" >/dev/null 2>&1
-systemctl restart "$SERVICE.service" >/dev/null 2>&1
+# Reload systemd daemon to apply changes
+echo "Reloading systemd daemon..."
+systemctl daemon-reload
 
-# Step 5: Verify service is enabled and active
-enabled=$(systemctl is-enabled "$SERVICE.service" 2>/dev/null)
-active=$(systemctl is-active "$SERVICE.service" 2>/dev/null)
-sync_status=$(timedatectl show -p NTPSynchronized --value 2>/dev/null)
+# Enable and start systemd-timesyncd (enable ensures it starts on boot)
+echo "Enabling and starting systemd-timesyncd.service..."
+systemctl enable --now systemd-timesyncd.service
 
-if [[ "$enabled" != "enabled" || "$active" != "active" ]]; then
-    echo "ERROR: systemd-timesyncd is not running correctly" >&2
-    exit 1
-fi
+# Verify the service is active and running
+echo "Checking systemd-timesyncd status..."
+systemctl status systemd-timesyncd.service --no-pager
 
-# NTP sync might take some time, don't fail if not yet synced
-if [[ "$sync_status" != "yes" ]]; then
-    true
-fi
+echo "Remediation complete: systemd-timesyncd is configured, enabled, and running."

@@ -10,7 +10,7 @@ packer {
 ################################################################
 
 source "amazon-ebs" "ubuntu" {
-  ami_name      = "packer-ubuntu-harden-9"
+  ami_name      = "Packer-Ubuntu-LV2-1"
   instance_type = "t2.micro"
   region        = "ap-south-1"
 
@@ -29,7 +29,7 @@ source "amazon-ebs" "ubuntu" {
   # Root disk
   launch_block_device_mappings {
     device_name           = "/dev/xvda"
-    volume_size           = 25
+    volume_size           = 10
     volume_type           = "gp3"
     delete_on_termination = true
   }
@@ -37,7 +37,7 @@ source "amazon-ebs" "ubuntu" {
   # /var
   launch_block_device_mappings {
     device_name           = "/dev/sdb"
-    volume_size           = 10
+    volume_size           = 5
     volume_type           = "gp3"
     delete_on_termination = true
   }
@@ -45,7 +45,7 @@ source "amazon-ebs" "ubuntu" {
   # /tmp
   launch_block_device_mappings {
     device_name           = "/dev/sdc"
-    volume_size           = 5
+    volume_size           = 2
     volume_type           = "gp3"
     delete_on_termination = true
   }
@@ -53,7 +53,7 @@ source "amazon-ebs" "ubuntu" {
   # /var/log
   launch_block_device_mappings {
     device_name           = "/dev/sdd"
-    volume_size           = 5
+    volume_size           = 3
     volume_type           = "gp3"
     delete_on_termination = true
   }
@@ -61,7 +61,7 @@ source "amazon-ebs" "ubuntu" {
   # /var/tmp
   launch_block_device_mappings {
     device_name           = "/dev/sde"
-    volume_size           = 5
+    volume_size           = 3
     volume_type           = "gp3"
     delete_on_termination = true
   }
@@ -69,7 +69,7 @@ source "amazon-ebs" "ubuntu" {
   # /usr
   launch_block_device_mappings {
     device_name           = "/dev/sdf"
-    volume_size           = 4
+    volume_size           = 2
     volume_type           = "gp3"
     delete_on_termination = true
   }
@@ -77,7 +77,7 @@ source "amazon-ebs" "ubuntu" {
   # /var/log/audit
   launch_block_device_mappings {
     device_name           = "/dev/sdg"
-    volume_size           = 5
+    volume_size           = 3
     volume_type           = "gp3"
     delete_on_termination = true
   }
@@ -85,7 +85,7 @@ source "amazon-ebs" "ubuntu" {
   # /home
   launch_block_device_mappings {
     device_name           = "/dev/sdh"
-    volume_size           = 20
+    volume_size           = 10
     volume_type           = "gp3"
     delete_on_termination = true
   }
@@ -93,15 +93,7 @@ source "amazon-ebs" "ubuntu" {
   # swap
   launch_block_device_mappings {
     device_name           = "/dev/sdi"
-    volume_size           = 10
-    volume_type           = "gp3"
-    delete_on_termination = true
-  }
-
-  # /dev/shm
-  launch_block_device_mappings {
-    device_name           = "/dev/sdj"
-    volume_size           = 2
+    volume_size           = 5
     volume_type           = "gp3"
     delete_on_termination = true
   }
@@ -130,7 +122,7 @@ build {
       "scripts/version-hardening.sh",
 
       # CIS LEVEL 1 scripts
-       "CIS-LEVEL-1/update.sh",
+      "CIS-LEVEL-1/update.sh",
       "CIS-LEVEL-1/1.1.1.9.sh",
       "CIS-LEVEL-1/1.3.1.2.sh",
       "CIS-LEVEL-1/1.4.1.sh",
@@ -143,13 +135,14 @@ build {
       "CIS-LEVEL-1/3.3.9.sh",
 #      "CIS-LEVEL-1/4.2.3.sh",
 #      "CIS-LEVEL-1/4.2.4.sh",
-      "CIS-LEVEL-1/4.2.1-6-7.sh",
+      "CIS-LEVEL-1/4.2.1-3-6-7.sh",
 #      "CIS-LEVEL-1/4.3.4.sh",
 #      "CIS-LEVEL-1/4.3.5.sh",
 #      "CIS-LEVEL-1/4.3.8.sh",
 #      "CIS-LEVEL-1/4.3.10.sh",
 #      "CIS-LEVEL-1/4.4.1.1.sh",
 #      "CIS-LEVEL-1/4.4.2.2.sh",
+      "CIS-LEVEL-1/5.2.7.sh",
       "CIS-LEVEL-1/5.3.2.2.sh",
       "CIS-LEVEL-1/5.3.2.4.sh",
       "CIS-LEVEL-1/5.3.3.1.1.sh",
@@ -164,6 +157,8 @@ build {
       "CIS-LEVEL-1/5.3.3.4.1.sh",
       "CIS-LEVEL-1/5.4.3.2.sh",
       "CIS-LEVEL-1/6.1.4.1.sh",
+      # "CIS-LEVEL-1/6.3.1.sh",
+      # "CIS-LEVEL-1/6.3.2.sh",
       "CIS-LEVEL-1/7.1.12.sh",
 
     ]

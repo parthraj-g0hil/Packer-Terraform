@@ -15,7 +15,6 @@ declare -A DEVICE_MAP=(
   ["/var/log/audit"]="/dev/xvdg"
   ["/home"]="/dev/xvdh"
   ["swap"]="/dev/xvdi"
-  ["/dev/shm"]="/dev/xvdj"
 )
 
 # Secure mount options
@@ -27,12 +26,10 @@ declare -A MOUNT_OPTIONS=(
   ["/var/log"]="defaults,rw,nosuid,nodev,noexec,relatime"
   ["/var/log/audit"]="nodev,noexec,nosuid"
   ["/usr"]="nodev"
-  ["/dev/shm"]="nodev,nosuid,noexec"
 )
 
-# Ensure required dirs exist
+# Ensure /var/log/audit exists
 mkdir -p /var/log/audit
-mkdir -p /dev/shm
 
 # Loop through all device mappings
 for dir in "${!DEVICE_MAP[@]}"; do
@@ -84,11 +81,8 @@ for dir in "${!DEVICE_MAP[@]}"; do
   mkdir -p "$temp_mount"
   mount "$device" "$temp_mount"
 
-  # Only copy data for persistent dirs (skip shm since it's fresh)
-  if [[ "$dir" != "/dev/shm" ]]; then
-    echo "📦 Copying data from $dir → $temp_mount"
-    rsync -aHAX "$dir/" "$temp_mount/"
-  fi
+  echo "📦 Copying data from $dir → $temp_mount"
+  rsync -aHAX "$dir/" "$temp_mount/"
 
   umount "$temp_mount"
   mkdir -p "$dir"

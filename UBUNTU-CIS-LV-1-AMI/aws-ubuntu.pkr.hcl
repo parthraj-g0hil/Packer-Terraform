@@ -112,7 +112,8 @@ build {
     scripts = [
       # General scripts
       "scripts/packages-lib.sh",         
-      "scripts/filesystem.sh",           
+      "scripts/filesystem.sh",
+      "scripts/shm.sh",           
       "scripts/password-policy.sh",
       "scripts/disable-usb.sh",
       "scripts/grub.sh",

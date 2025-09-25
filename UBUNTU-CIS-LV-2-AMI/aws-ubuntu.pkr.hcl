@@ -10,7 +10,7 @@ packer {
 ################################################################
 
 source "amazon-ebs" "ubuntu" {
-  ami_name      = "Packer-Ubuntu-LV2-1"
+  ami_name      = "Ubuntu-cis-lv2"
   instance_type = "t2.micro"
   region        = "ap-south-1"
 
@@ -105,12 +105,24 @@ build {
   name    = "ubuntu"
   sources = ["source.amazon-ebs.ubuntu"]
 
+  # Run apt update/upgrade before scripts
+  provisioner "shell" {
+    execute_command = "echo 'ubuntu' | sudo -S bash '{{ .Path }}'"
+    inline = [
+      "sudo apt update -y >/dev/null 2>&1",
+      "sudo apt upgrade -y >/dev/null 2>&1",
+      "sudo apt full-upgrade -y >/dev/null 2>&1",
+      "sudo apt autoremove -y >/dev/null 2>&1"
+    ]
+  }
+
   provisioner "shell" {
     execute_command = "echo 'ubuntu' | sudo -S bash '{{ .Path }}'"
     scripts = [
       # General scripts
       "scripts/packages-lib.sh",         
-      "scripts/filesystem.sh",           
+      "scripts/filesystem.sh",
+      "scripts/shm.sh",           
       "scripts/password-policy.sh",
       "scripts/disable-usb.sh",
       "scripts/grub.sh",
@@ -122,7 +134,7 @@ build {
       "scripts/version-hardening.sh",
 
       # CIS LEVEL 1 scripts
-      "CIS-LEVEL-1/update.sh",
+#      "CIS-LEVEL-1/update.sh",
       "CIS-LEVEL-1/1.1.1.9.sh",
       "CIS-LEVEL-1/1.3.1.2.sh",
       "CIS-LEVEL-1/1.4.1.sh",

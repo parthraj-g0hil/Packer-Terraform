@@ -10,8 +10,8 @@ packer {
 ################################################################
 
 source "amazon-ebs" "ubuntu" {
-  ami_name      = "packer-ubuntu-harden-8"
-  instance_type = "t2.xlarge"
+  ami_name      = "Ubuntu-cis-lv1"
+  instance_type = "t2.micro"
   region        = "ap-south-1"
 
   source_ami_filter {
@@ -29,7 +29,7 @@ source "amazon-ebs" "ubuntu" {
   # Root disk
   launch_block_device_mappings {
     device_name           = "/dev/xvda"
-    volume_size           = 25
+    volume_size           = 10
     volume_type           = "gp3"
     delete_on_termination = true
   }
@@ -37,7 +37,7 @@ source "amazon-ebs" "ubuntu" {
   # /var
   launch_block_device_mappings {
     device_name           = "/dev/sdb"
-    volume_size           = 15
+    volume_size           = 5
     volume_type           = "gp3"
     delete_on_termination = true
   }
@@ -45,7 +45,7 @@ source "amazon-ebs" "ubuntu" {
   # /tmp
   launch_block_device_mappings {
     device_name           = "/dev/sdc"
-    volume_size           = 5
+    volume_size           = 2
     volume_type           = "gp3"
     delete_on_termination = true
   }
@@ -53,7 +53,7 @@ source "amazon-ebs" "ubuntu" {
   # /var/log
   launch_block_device_mappings {
     device_name           = "/dev/sdd"
-    volume_size           = 10
+    volume_size           = 3
     volume_type           = "gp3"
     delete_on_termination = true
   }
@@ -61,7 +61,7 @@ source "amazon-ebs" "ubuntu" {
   # /var/tmp
   launch_block_device_mappings {
     device_name           = "/dev/sde"
-    volume_size           = 6
+    volume_size           = 3
     volume_type           = "gp3"
     delete_on_termination = true
   }
@@ -69,7 +69,7 @@ source "amazon-ebs" "ubuntu" {
   # /usr
   launch_block_device_mappings {
     device_name           = "/dev/sdf"
-    volume_size           = 8
+    volume_size           = 2
     volume_type           = "gp3"
     delete_on_termination = true
   }
@@ -77,7 +77,7 @@ source "amazon-ebs" "ubuntu" {
   # /var/log/audit
   launch_block_device_mappings {
     device_name           = "/dev/sdg"
-    volume_size           = 7
+    volume_size           = 3
     volume_type           = "gp3"
     delete_on_termination = true
   }
@@ -85,7 +85,7 @@ source "amazon-ebs" "ubuntu" {
   # /home
   launch_block_device_mappings {
     device_name           = "/dev/sdh"
-    volume_size           = 20
+    volume_size           = 10
     volume_type           = "gp3"
     delete_on_termination = true
   }
@@ -93,7 +93,7 @@ source "amazon-ebs" "ubuntu" {
   # swap
   launch_block_device_mappings {
     device_name           = "/dev/sdi"
-    volume_size           = 10
+    volume_size           = 5
     volume_type           = "gp3"
     delete_on_termination = true
   }

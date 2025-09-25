@@ -26,6 +26,12 @@ source "amazon-ebs" "ubuntu" {
 
   ssh_username = "ubuntu"
 
+  #  AMI tags here
+  tags = {
+    Name        = "Ubuntu-cis-lv2"
+    Owner       = "EMC"
+  }
+
   # Root disk
   launch_block_device_mappings {
     device_name           = "/dev/xvda"
